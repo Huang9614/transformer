@@ -3,8 +3,13 @@
 @when : 2019-10-29
 @homepage : https://github.com/gusdnd852
 """
-from torchtext.legacy.data import Field, BucketIterator
-from torchtext.legacy.datasets.translation import Multi30k
+from torchtext.data import Field, BucketIterator
+from torchtext.datasets import TranslationDataset, Multi30k
+
+ROOT = '~/transformer/data/'
+Multi30k.download(ROOT)
+
+
 
 
 class DataLoader:
@@ -32,8 +37,15 @@ class DataLoader:
             self.target = Field(tokenize=self.tokenize_de, init_token=self.init_token, eos_token=self.eos_token,
                                 lower=True, batch_first=True)
 
-        train_data, valid_data, test_data = Multi30k.splits(exts=self.ext, fields=(self.source, self.target))
-        return train_data, valid_data, test_data
+        # train_data, valid_data, test_data = Multi30k.splits(exts=self.ext, fields=(self.source, self.target))
+
+        (trnset, valset, testset) = TranslationDataset.splits(
+                                      path       = ROOT,
+                                      exts       = ['.en', '.de'],
+                                      fields     = [('src', self.source), ('trg',self.target)],
+                                      test       = 'test2016'
+                                      )
+        return trnset, valset, testset
 
     def build_vocab(self, train_data, min_freq):
         self.source.build_vocab(train_data, min_freq=min_freq)
